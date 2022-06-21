@@ -273,7 +273,7 @@ This ensures that our CI pipeline passes before allowing a merge.
 
 ---
 
-# Add configurable settings (optional)
+# Add configurable settings and test branch security
 
 In order to make this pipeline config truly flexible, we can requiren some inputs
 
@@ -310,3 +310,11 @@ and in `CodeBuildProject > Triggers > FilterGroups >
 ```
 
 Go to the stack in CloudFormation and update the YAML template using Designer. Update the stack.
+
+Commit this change a create a Pull Request. Your Branch security rules should be applied.
+
+---
+
+## Create Pipeline Build Artifact - https://youtu.be/FuXpwLiMI_Q?t=1191
+
+This will set up our builder parameters.
