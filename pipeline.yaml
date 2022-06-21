@@ -83,7 +83,7 @@ Resources:
         - Arn
       Source:
         Type: GITHUB
-        Location: "https://github.com/${GitHubOwner}/${GitHubRepository}.git"
+        Location: !Sub "https://github.com/${GitHubOwner}/${GitHubRepository}.git"
         BuildSpec: buildspec.yaml
         Auth:
           Type: OAUTH
@@ -94,9 +94,11 @@ Resources:
         Webhook: true
         FilterGroups:
           - - Type: EVENT
-              Pattern: "PULL_REQUEST_CREATED, PULL_REQUEST_UPDATED, PULL_REQUEST_REOPENED"
+              Pattern: >-
+                PULL_REQUEST_CREATED, PULL_REQUEST_UPDATED,
+                PULL_REQUEST_REOPENED
             - Type: BASE_REF
-              Pattern: !Sub ^refs/heads/${GitHubBranch}$
+              Pattern: !Sub "^refs/heads/${GitHubBranch}$"
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
