@@ -4,14 +4,14 @@ Parameters:
   GitHubOwner:
     Type: String
     AllowedPattern: "[A-Za-z0-9-]+"
-    Default: quick-refs
+    Default: danfusaro
   GitHubRepository:
     Type: String
     AllowedPattern: "[A-Za-z0-9-]+"
   GitHubBranch:
     Type: String
     AllowedPattern: "[A-Za-z0-9-]+"
-    Default: master
+    Default: main
   CodeBuildEnvironmentImage:
     Type: String
     Default: "aws/codebuild/standard:4.0"
@@ -100,4 +100,4 @@ Resources:
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
-        Image: "aws/codebuild/standard:4.0"
+        Image: !Ref CodeBuildEnvironmentImage

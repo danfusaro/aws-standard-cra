@@ -276,3 +276,37 @@ This ensures that our CI pipeline passes before allowing a merge.
 # Add configurable settings (optional)
 
 In order to make this pipeline config truly flexible, we can requiren some inputs
+
+We've added the following to pipleline.yaml:
+
+```
+Parameters:
+ GitHubOwner:
+    Type: String
+    AllowedPattern: '[A-Za-z0-9-]+'
+    Default: danfusaro
+  GitHubRepository:
+    Type: String
+    AllowedPattern: '[A-Za-z0-9-]+'
+  GitHubBranch:
+    Type: String
+    AllowedPattern: '[A-Za-z0-9-]+'
+    Default: main
+```
+
+Change `CodeBuildProject > Source > Location' to use these values
+
+```
+Location: !Sub 'https://github.com/${GitHubOwner}/${GitHubRepository}.git'
+```
+
+---
+
+and in `CodeBuildProject > Triggers > FilterGroups >
+
+```
+- Type: BASE_REF
+              Pattern: !Sub '^refs/heads/${GitHubBranch}$'
+```
+
+Go to the stack in CloudFormation and update the YAML template using Designer. Update the stack.
