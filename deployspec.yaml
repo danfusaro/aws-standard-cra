@@ -5,8 +5,18 @@ env:
     ENV_NAME: dev
 
 phases:
+  preBuild:
+    commands:
+      - npm ci
   build:
     commands:
-      - echo Entered the deploy phase...
-      - echo Deploy started on `date`
-      - echo Deploying to $ENV_NAME environment...
+      - echo Entered the deploy phase to $ENV_NAME...
+      - echo Deploy started
+      - npm run build
+artifacts:
+    baseDirectory: build
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
