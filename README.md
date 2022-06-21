@@ -1,46 +1,92 @@
-# Getting Started with Create React App
+---
+marp: true
+title: AWS Github CI CD Pipeline with CloudFormation
+paginate: true
+---
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# The Goal
 
-## Available Scripts
+- Configure CI and CD pipelines using AWS
+- When changes to our repo are merged, those changes are shown on a server
+- Have a basic understanding of terminology
+- Understand the steps and demystify the process
+- Try it yourself
 
-In the project directory, you can run:
+---
 
-### `npm start`
+# Continuous Integration (CI) Pipeline
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+What does a "continuous integration (CI) pipeline" do?
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+- Reads code from repository
+- Adds environment variables, set configs, use build parameters etc.
+- Runs build, handles errors
+- Report red/amber/greens status to release management tool, e.g. Github
 
-### `npm test`
+**AWS CodeBuild is used to configure build settings.**
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+# Continuous Delivery (CD) Pipeline
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+What does a "continuous delivery (CD) pipeline" do?
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- Ingest build artifact(s) from CI pipeline
+- Put files into place
+- Update server(s) and deploy
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+**AWS CodePipeline is used for to configure deployment settings.**
 
-### `npm run eject`
+---
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+# Infrastructure as Code
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+CI/CD config and settings are "saved" somewhere so that it can be communicated, scaled, improved, etc.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+**AWS CloudFormation is used to "save" our overall configuration**
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+---
 
-## Learn More
+# Let's do it
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+---
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+# Configure Github Access
+
+1. Generate specific Github Access Token for AWS @ https://github.com/settings/tokens/new
+
+   - Required to interop with our Git repo.
+     - `repo` - Full control of private repositories
+     - `admin: repo_hook` - Full control of repository hooks
+
+---
+
+2. Store token using AWS Secrets Manager
+   - https://us-east-1.console.aws.amazon.com/secretsmanager/home?region=us-east-1#!/home or search for "Secrets Manager"
+   - Select secret type: "Other type of secret"
+     - Key: `GITHUB_ACCESS_TOKEN`
+     - Value: `[your personal access token]`
+     - Click Next
+   - Name it: `GITHUB_ACCESS` and click next until saved (Stored)
+   - This can be used throughout all AWS applications
+
+---
+
+# Configure Web App
+
+- Create `buildspec.yml`
+  - Build specification file for CodeBuild
+    - Directory structure
+    - What to build, where to get it
+  - Add basic build steps
+
+```
+version: 0.2
+
+phases:
+  build:
+    commands:
+      - echo Build started on `date`
+```
+
+- For more in-depth settings: https://docs.aws.amazon.com/codebuild/latest/userguide/build-spec-ref.html
