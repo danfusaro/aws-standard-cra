@@ -62,7 +62,7 @@ CI/CD config and settings are "saved" somewhere so that it can be communicated, 
 ---
 
 2. Store token using AWS Secrets Manager
-   - https://us-east-1.console.aws.amazon.com/secretsmanager/home?region=us-east-1#!/home or search for "Secrets Manager"
+   - In AWS Console, search for "Secrets Manager"
    - Select secret type: "Other type of secret"
      - Key: `GITHUB_ACCESS_TOKEN`
      - Value: `[your personal access token]`
@@ -90,3 +90,157 @@ phases:
 ```
 
 - For more in-depth settings: https://docs.aws.amazon.com/codebuild/latest/userguide/build-spec-ref.html
+
+---
+
+# Configure CloudFormation
+
+Let's create a template that will run our build (`pipeline.yaml`)
+
+1. In AWS Console, go to "Cloud Formation"
+2. Click Create Stack (with New Resources)
+3. Create template in Designer
+
+---
+
+# Create YAML with CloudFormation Resource Designer
+
+1. Choose "Template" tab (bottom)
+2. Choose `YAML` format
+3. Scroll to `Code Build` Resource type and drag and drop `Project` into designer pane
+4. Remove all `Metadata` entries
+
+---
+
+# Policies
+
+```
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  CodeBuildServiceRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Sid: CloudWatchLogsPolicy
+                Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: '*'
+              - Sid: S3GetObjectPolicy
+                Effect: Allow
+                Action:
+                  - 's3:GetObject'
+                  - 's3:GetObjectVersion'
+                Resource: '*'
+              - Sid: S3PutObjectPolicy
+                Effect: Allow
+                Action:
+                  - 's3:PutObject'
+                Resource: '*'
+              - Sid: ECRPullPolicy
+                Effect: Allow
+                Action:
+                  - 'ecr:BatchCheckLayerAvailability'
+                  - 'ecr:GetDownloadUrlForLayer'
+                  - 'ecr:BatchGetImage'
+                Resource: '*'
+              - Sid: ECRAuthPolicy
+                Effect: Allow
+                Action:
+                  - 'ecr:GetAuthorizationToken'
+                Resource: '*'
+              - Sid: S3BucketIdentity
+                Effect: Allow
+                Action:
+                  - 's3:GetBucketAcl'
+                  - 's3:GetBucketLocation'
+                Resource: '*'
+```
+
+---
+
+Creates a Role to run the pipelines. `AssumeRolePolicyDocument` gives any service the ability to assume a role and follows the spec in `Version`. Values copied and pasted from [AWS Codebuild User Guide.](https://docs.aws.amazon.com/codebuild/latest/userguide/setting-up.html#setting-up-service-role) - see `create-role.json` and `put-role-policy.json`. `CodeCommitPolicy` is removed because GitHub is being used for source control in our example.
+
+---
+
+# Auth Artifact
+
+Define our Credential/Auth artifact
+
+```
+CodeBuildSourceCredential:
+    Type: 'AWS::CodeBuild::SourceCredential'
+    Properties:
+      AuthType: PERSONAL_ACCESS_TOKEN
+      ServerType: GITHUB
+      Token: '{{resolve:secretsmanager:GITHUB_ACCESS:SecretString:GITHUB_ACCESS_TOKEN}}'
+```
+
+---
+
+# Project Configuration
+
+```
+  CodeBuildProject:
+    Type: 'AWS::CodeBuild::Project'
+    Properties:
+      Name: !Ref 'AWS::StackName'
+      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+      Source:
+        Type: GITHUB
+        Location: 'https://github.com/danfusaro/aws-standard-cra.git'
+        BuildSpec: buildspec.yml
+        Auth:
+          Type: OAUTH
+          Resource: !Ref CodeBuildSourceCredential
+      Artifacts:
+        Type: NO_ARTIFACTS
+      Triggers:
+        Webhook: true
+        FilterGroups:
+          - - Type: EVENT
+              Pattern: 'PULL_REQUEST_CREATED, PULL_REQUEST_UPDATED'
+            - Type: BASE_REF
+              Pattern: !Sub ^refs/heads/main$
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:4.0
+```
+
+---
+
+CodeBuildProject config includes a reference to our created Service Role and references the GitHub project, build file, and auth setting.
+
+`Artifacts` is set to `NO_ARTIFACTS` temporarily but this will specify what files are included after build.
+
+`Triggers` specifies which events will start a build. This is configured specifically against Git syntax.
+
+`Environment`: Basic Linux container, compute type and the Docker image provided by CodeBuild
+
+---
+
+## Final Steps
+
+1. Validate your file with the "Validate template" button (Top, checkbox)
+2. Copy the resulting text file as `pipeline.yaml` in your web application root.
+3. Save this configuration in AWS with the "Create Stack" (cloud icon) in Designer
+4. Name and configure your stack, e.g. "aws-standard-cra-ci-cd" , acknowledge creation of IAM resources
+5. Create stack, cross fingers.
+
+View the "Resources" tab to see what was created
+
+---
