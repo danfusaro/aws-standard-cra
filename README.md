@@ -116,6 +116,7 @@ Let's create a template that will run our build (`pipeline.yaml`)
 
 ```
 AWSTemplateFormatVersion: 2010-09-09
+Description: CI/CD pipeline for github projects
 Resources:
   CodeBuildServiceRole:
     Type: 'AWS::IAM::Role'
@@ -244,3 +245,34 @@ CodeBuildProject config includes a reference to our created Service Role and ref
 View the "Resources" tab to see what was created
 
 ---
+
+## CodeBuild Project
+
+- Navigate to "CodeBuild" in the AWS Console
+- Note linked primary repository from GitHub
+- In the "Build details" tab, note the overall config and Primary service webhook events
+- Click the link to see the Webhook config in GitHub
+
+---
+
+## Validate webhook
+
+1. Create a `develop` branch and push a change
+2. Submit a pr against `main`
+3. Wait for status to show "AWS CodeBuild" message
+
+---
+
+## Add branch security
+
+This ensures that our CI pipeline passes before allowing a merge.
+
+1. In Settings, add a branch protection rule
+2. Check "Reuire status checks to pass before merging"
+3. Search for "AWS CodeBuild ..."
+
+---
+
+# Add configurable settings (optional)
+
+In order to make this pipeline config truly flexible, we can requiren some inputs
