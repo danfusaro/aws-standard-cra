@@ -68,7 +68,7 @@ Resources:
       Source:
         Type: GITHUB
         Location: "https://github.com/danfusaro/aws-standard-cra.git"
-        BuildSpec: buildspec.yml
+        BuildSpec: buildspec.yaml
         Auth:
           Type: OAUTH
           Resource: !Ref CodeBuildSourceCredential
@@ -78,7 +78,7 @@ Resources:
         Webhook: true
         FilterGroups:
           - - Type: EVENT
-              Pattern: "PULL_REQUEST_CREATED, PULL_REQUEST_UPDATED"
+              Pattern: "PULL_REQUEST_CREATED, PULL_REQUEST_UPDATED, PULL_REQUEST_REOPENED"
             - Type: BASE_REF
               Pattern: !Sub ^refs/heads/main$
       Environment:
