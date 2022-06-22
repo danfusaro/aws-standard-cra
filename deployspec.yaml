@@ -13,10 +13,10 @@ phases:
       - echo Entered the deploy phase to $ENV_NAME...
       - echo Deploy started
       - npm run build
-artifacts:
+  artifacts:
     baseDirectory: build
     files:
-      - '**/*'
+      - "**/*"
   cache:
     paths:
       - node_modules/**/*
