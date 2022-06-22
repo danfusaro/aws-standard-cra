@@ -5,14 +5,14 @@ env:
     ENV_NAME: dev
 
 phases:
-  pre_build:
-    commands:
-      - npm ci
   build:
     commands:
       - echo Entered the deploy phase to $ENV_NAME...
-      - echo Deploy started
-  artifacts:
-    baseDirectory: build
-    files:
-      - "**/*"
+  post_build:
+    commands:
+      - echo Deploy on $ENV_NAME complete.
+
+artifacts:
+  baseDirectory: build
+  files:
+    - "**/*"
