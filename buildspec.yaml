@@ -20,3 +20,4 @@ artifacts:
   files:
     - build/**/*
     - deployspec.yaml
+    - node_modules/**/*
