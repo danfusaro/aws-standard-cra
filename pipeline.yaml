@@ -136,7 +136,7 @@ Resources:
           - Name: ENV_NAME
             Value: qa
 
-  CodeBuilProjectDeployProd:
+  CodeBuildProjectDeployProd:
     Type: "AWS::CodeBuild::Project"
     Properties:
       Name: !Sub "${AWS::StackName}-deploy-prod"
