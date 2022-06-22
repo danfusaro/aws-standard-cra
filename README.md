@@ -317,4 +317,10 @@ Commit this change a create a Pull Request. Your Branch security rules should be
 
 ## Create Pipeline Build Artifact - https://youtu.be/FuXpwLiMI_Q?t=1191
 
-This will set up our builder parameters.
+This will set up our builder parameters and stages. What does this do?
+
+1. Create CodePipeline Service Role
+2. Creates CodePipeline artifact storage (S3)
+3. Creates stages dev, qa, prod
+4. Create build web hook
+5. Adds association to GitHub creds
